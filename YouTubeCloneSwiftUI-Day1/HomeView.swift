@@ -20,6 +20,8 @@ struct HomeView: View {
         ZStack(alignment: .top) {
             //header view
             HeaderView()
+                .zIndex(1)
+                .offset(y:headerData.headerOffset)
             
             //video view
             ScrollView(.vertical,showsIndicators: false){
@@ -82,13 +84,16 @@ struct HomeView: View {
                                 print("Top")
                                 //if top hiding header
                                 
+                                //same clearing bottom offset line m90
+                                headerData.bottomScrolledOffset = 0
+                                
                                 if headerData.topScrolledOffset == 0{
                                     headerData.topScrolledOffset = offset
                                 }
                                 let progress = (headerData.topScrolledOffset + getMaxOffset() ) - offset
                                // print(progress)
                                 
-                                let offsetCondition = getMaxOffset() - progress <= getMaxOffset()
+                                let offsetCondition = (headerData.topScrolledOffset + getMaxOffset()) >= getMaxOffset() && getMaxOffset() - progress  <= getMaxOffset()
                                 
                                 let headerOffset = offsetCondition ? -(getMaxOffset() - progress) : -getMaxOffset()
                                 
@@ -102,7 +107,22 @@ struct HomeView: View {
                             if  offset < headerData.offset{
                                 print("Bottom")
                                 //if bottom revealing header
-                                let progress = headerData.bottomScrolledOffset
+                                
+                                //clearing topScrollValue and setting bottom line m90
+                                
+                                headerData.topScrolledOffset =  0
+                                
+                                if headerData.bottomScrolledOffset == 0{
+                                    headerData.bottomScrolledOffset = offset
+                                }
+                                
+                                //Moving if little bit of screen is swiped down..
+                                //for eg 40 offset...
+                                
+                                withAnimation(.easeOut(duration: 0.25)){
+                                    let headerOffset = headerData.headerOffset
+                                    headerData.headerOffset = headerData.bottomScrolledOffset >= offset + 40 ? 0 : (headerOffset != -getMaxOffset() ? 0 : headerOffset)
+                                }
                             }
                             
                             headerData.offset = offset
